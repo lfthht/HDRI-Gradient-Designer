@@ -1,0 +1,103 @@
+{
+ "name": "Golden Hour",
+ "params": {
+  "A": [
+   {
+    "e": 0,
+    "c": "#c0a186"
+   },
+   {
+    "e": 2.5,
+    "c": "#c3a68a"
+   },
+   {
+    "e": 7.5,
+    "c": "#c4b39e"
+   },
+   {
+    "e": 15,
+    "c": "#b6b7af"
+   },
+   {
+    "e": 35,
+    "c": "#a1aaae"
+   },
+   {
+    "e": 90,
+    "c": "#8794a0"
+   }
+  ],
+  "B": [
+   {
+    "e": 0,
+    "c": "#aaa2a2"
+   },
+   {
+    "e": 5,
+    "c": "#aca7a8"
+   },
+   {
+    "e": 15,
+    "c": "#a8aaae"
+   },
+   {
+    "e": 35,
+    "c": "#9ca4ad"
+   },
+   {
+    "e": 90,
+    "c": "#8794a0"
+   }
+  ],
+  "link": false,
+  "sideBlend": 1.5,
+  "horizon": {
+   "offset": 0,
+   "softness": 0.6
+  },
+  "ground": {
+   "top": "#6d6a66",
+   "bottom": "#3d3c3b",
+   "falloff": 15
+  },
+  "glow": {
+   "color": "#ffc890",
+   "strength": 0.12,
+   "width": 18,
+   "band": 0.15,
+   "bandHeight": 4
+  },
+  "sun": {
+   "az": 0,
+   "el": 4.0,
+   "disc": true,
+   "color": "#ffd2a0",
+   "size": 0.53,
+   "softness": 0.15,
+   "mode": "baked"
+  },
+  "saturation": 1,
+  "grain": 0,
+  "version": 1,
+  "curve": {
+   "spread": 0.3,
+   "flow": 0.035
+  },
+  "light": {
+   "condition": "clear",
+   "cie": "13",
+   "auto": true,
+   "skyLux": 10000,
+   "sunLux": 50000,
+   "extinction": 0.21,
+   "stopsLightness": 0,
+   "anchorEl": 2,
+   "albedo": 0.2
+  },
+  "exp": {
+   "ev": 0,
+   "bgOffset": 0,
+   "bgRef": "design"
+  }
+ }
+}

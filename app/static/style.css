@@ -1,0 +1,199 @@
+:root {
+  --bg: #1d1d1f;          /* neutral, so the eye doesn't adapt to a tint */
+  --panel: #252527;
+  --panel2: #2c2c2f;
+  --line: #3a3a3e;
+  --text: #d8d8da;
+  --muted: #8d8d93;
+  --accent: #c9a77c;
+  --accent2: #8fa6c4;
+  --ok: #7fb98a;
+  --err: #d98a7e;
+}
+* { box-sizing: border-box; }
+html, body { margin: 0; height: 100%; background: var(--bg); color: var(--text);
+  font: 12.5px/1.4 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; }
+/* page = header + main filling the rest, whatever the header's wrapped height */
+body { display: flex; flex-direction: column; overflow: hidden; }
+header { display: flex; align-items: center; gap: 18px; padding: 8px 14px; border-bottom: 1px solid var(--line);
+  background: var(--panel); flex-wrap: wrap; }
+.brand { font-weight: 600; font-size: 14px; letter-spacing: .2px; }
+.brand .sub { color: var(--muted); font-weight: 400; margin-left: 6px; }
+.hgroup { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
+.hgroup.right { margin-left: auto; }
+.presetSaveBox { display: inline-flex; gap: 4px; align-items: center; }
+.presetSaveBox[hidden] { display: none; }
+.presetSaveBox input { width: 180px; }
+.btnGroup { display: inline-flex; }
+.btnGroup button:first-child { border-radius: 4px 0 0 4px; }
+.btnGroup button:last-child { border-radius: 0 4px 4px 0; border-left: 0; }
+main { display: grid; grid-template-columns: 340px minmax(0, 1fr) 300px; flex: 1 1 auto; min-height: 0; }
+aside { overflow-y: auto; background: var(--panel); min-height: 0; }
+#controls { border-right: 1px solid var(--line); }
+#outputPanel { border-left: 1px solid var(--line); }
+section { padding: 10px 12px 12px; border-bottom: 1px solid var(--line); }
+h3 { margin: 0 0 8px; font-size: 12px; text-transform: uppercase; letter-spacing: .6px; color: #bdbdc2; font-weight: 600; }
+h3 small { text-transform: none; letter-spacing: 0; color: var(--muted); font-weight: 400; margin-left: 4px; }
+label { color: var(--muted); display: inline-flex; gap: 6px; align-items: center; }
+input, select, button { font: inherit; color: var(--text); background: var(--panel2); border: 1px solid var(--line);
+  border-radius: 4px; padding: 3px 6px; }
+input[type=color] { padding: 0; width: 34px; height: 22px; border-radius: 3px; cursor: pointer; }
+input[type=text] { width: 100%; }
+button { cursor: pointer; padding: 4px 10px; }
+button:hover { border-color: #55555b; background: #333337; }
+button:disabled { opacity: .45; cursor: default; }
+button.primary { background: #3b3429; border-color: #6e5a3f; color: #f1dfc5; width: 100%; margin: 4px 0; padding: 6px; }
+button.primary:hover { background: #4a4031; }
+#outputPanel button:not(.primary):not(.sm) { width: 100%; margin: 3px 0; }
+button.sm { padding: 1px 8px; }
+.chk { cursor: pointer; }
+.row { display: flex; gap: 8px; align-items: center; margin: 6px 0; flex-wrap: wrap; }
+.row > label:first-child { min-width: 70px; }
+.hint { color: var(--muted); font-size: 11.5px; }
+.hint .warn { color: #e0b070; }
+.swatch { display: inline-block; width: 22px; height: 11px; border-radius: 2px; border: 1px solid #000; vertical-align: -1px; }
+.subHead { margin: 10px 0 2px; color: #bdbdc2; font-size: 11.5px; font-weight: 600; }
+.subHead small { color: var(--muted); font-weight: 400; margin-left: 4px; }
+.pill { padding: 2px 8px; border-radius: 10px; background: var(--panel2); border: 1px solid var(--line); color: var(--muted); }
+.pill.ok { color: var(--ok); border-color: #3f5a45; }
+.pill.err { color: var(--err); border-color: #6a443e; }
+
+.slider { display: grid; grid-template-columns: 1fr 64px; gap: 2px 8px; margin: 6px 0; align-items: center; }
+.slider .lbl { grid-column: 1 / 3; color: var(--muted); font-size: 11.5px; }
+.slider input[type=range] { width: 100%; accent-color: var(--accent); }
+.slider input[type=number] { width: 64px; padding: 2px 4px; }
+
+.tabs { display: flex; gap: 4px; align-items: center; margin-bottom: 8px; }
+.tab { padding: 3px 10px; }
+.tab.active { background: #3b3429; border-color: #6e5a3f; color: #f1dfc5; }
+.tabs .chk { margin-left: auto; }
+
+/* sky gradient editor (main view): one track per side */
+#gradEditor { flex: 0 0 auto; padding: 6px 10px 8px; background: var(--panel); border: 1px solid var(--line); border-radius: 5px; }
+.gRow { display: grid; grid-template-columns: 78px minmax(0, 1fr); align-items: center; gap: 8px; margin: 7px 0; }
+.gLbl { color: var(--muted); text-align: right; }
+/* a track = gradient bar (top 46 px) + handle strip below it (click there to add a stop, like most gradient editors) */
+.track { position: relative; height: 66px; cursor: copy; border-radius: 4px;
+  background: linear-gradient(transparent 48px, #ffffff0b 48px); }
+.track:hover { background: linear-gradient(transparent 48px, #ffffff16 48px); }
+.trackGrad { position: absolute; left: 0; right: 0; top: 0; height: 46px; border: 1px solid var(--line); border-radius: 4px; }
+.track.active .trackGrad { border-color: #8a7350; box-shadow: 0 0 0 1px #8a735066; }
+.track.linked { opacity: .55; }
+/* each track has its own handle lane below it (row margin), so knobs never reach the next track or the ticks */
+.gRow.tRow { margin: 6px 0 8px; }
+.stop { position: absolute; top: -4px; width: 16px; height: 68px; margin-left: -8px; cursor: ew-resize; touch-action: none; }
+.stop::before { content: ""; position: absolute; left: 7px; top: 4px; height: 46px; width: 2px; background: #000a; }
+.stop::after { content: ""; position: absolute; left: 0; bottom: 0; width: 12px; height: 12px; border-radius: 50%;
+  border: 2px solid #111; background: var(--c, #888); }
+.stop.sel::after { border-color: #fff; box-shadow: 0 0 0 1px #000; }
+.ticks { position: relative; height: 16px; font-size: 10.5px; color: var(--muted); }
+.ticks span { position: absolute; transform: translateX(-50%); top: 2px; }
+.stopEdit { display: flex; gap: 6px; align-items: center; margin: 8px 0 0; flex-wrap: wrap; }
+.stopEdit input[type=text] { width: 76px; font-family: ui-monospace, Consolas, monospace; }
+.stopEdit input[type=number] { width: 60px; }
+.gSliders { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 0 18px;
+  margin-top: 6px; padding-top: 4px; border-top: 1px solid var(--line); }
+.gSliders .slider { margin: 4px 0 0; }
+.stopEdit .sep { width: 1px; height: 18px; background: var(--line); margin: 0 6px; }
+
+/* centre column: camera view, gradient editor and the dome/profile row share the height —
+   every canvas is fitted (aspect kept) into its box, so nothing is pushed off-screen */
+#views { padding: 8px 14px 10px; overflow-y: auto; display: flex; flex-direction: column; gap: 8px; min-width: 0; min-height: 0; }
+.viewHead { display: flex; align-items: center; gap: 10px; margin: 2px 0 4px; flex-wrap: wrap; }
+.viewHead h3 { margin: 0; }
+canvas { display: block; background: #111; border-radius: 3px; }
+.canvasBox { position: relative; min-height: 0; }
+.canvasBox > canvas { position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%); }
+/* min sizes scale with the screen: on short screens the column scrolls instead of shrinking the views to stamps */
+.camBox { flex: 1.25 1 0; min-height: clamp(150px, 34vh, 380px); }
+#camView { cursor: grab; touch-action: none; }
+.twoCol { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 14px; flex: 1 1 0; min-height: clamp(170px, 28vh, 320px); }
+.pane { display: flex; flex-direction: column; min-height: 0; min-width: 0; }
+.pane > .canvasBox { flex: 1 1 0; }
+#eqView { cursor: crosshair; touch-action: none; }
+
+pre#log { margin: 0; white-space: pre-wrap; font: 11px/1.35 ui-monospace, Consolas, monospace; color: #a9a9ae; max-height: 220px; overflow: auto; }
+
+/* colour picker (colorpicker.js) — resizable at the bottom-right corner, movable by its header */
+.cp { position: fixed; z-index: 30; display: flex; flex-direction: column; background: var(--panel);
+  border: 1px solid #55555b; border-radius: 6px; box-shadow: 0 10px 34px #000b;
+  resize: both; overflow: hidden; min-width: 300px; min-height: 530px; max-width: 96vw; max-height: 96vh; }
+.cp.hidden { display: none; }
+.cpHead { display: flex; align-items: center; gap: 8px; padding: 6px 8px; border-bottom: 1px solid var(--line);
+  cursor: move; user-select: none; flex-wrap: wrap; }
+.cpTitle { font-weight: 600; flex: 1 1 80px; min-width: 0; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
+.cpHead button.active { background: #3b3429; border-color: #6e5a3f; color: #f1dfc5; }
+.cpBody { flex: 1; display: flex; flex-direction: column; gap: 8px; padding: 8px 10px 10px; min-height: 0; }
+/* canvases are positioned, never laid out: their pixel size must not feed back into the window size */
+.cpPlaneBox { flex: 1 1 0; min-height: 110px; position: relative; }
+.cpPlaneBox canvas { position: absolute; top: 0; bottom: 0; border-radius: 3px; cursor: crosshair; touch-action: none; }
+.cpPlaneBox .cpPlane { left: 0; right: 32px; width: calc(100% - 32px); height: 100%; }
+.cpPlaneBox .cpStrip { right: 0; width: 24px; height: 100%; }
+.cpBody > :not(.cpPlaneBox) { flex: 0 0 auto; }
+.cpSwRow { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
+.cpOld, .cpNew { width: 44px; height: 26px; border-radius: 4px; border: 1px solid var(--line); padding: 0; }
+.cpOld { cursor: pointer; }
+input.cpHex { width: 82px; font-family: ui-monospace, Consolas, monospace; }
+.cpGamut { color: var(--err); font-size: 11px; }
+.cpReachBox { color: var(--muted); font-size: 11px; display: inline-flex; align-items: center; gap: 4px; }
+.cpReach { display: inline-block; width: 30px; height: 20px; border-radius: 3px; border: 1px solid var(--err); }
+.cpAces { display: grid; grid-template-columns: 52px repeat(3, minmax(0, 1fr)) auto; gap: 6px; align-items: center; }
+.cpAces .cpAcesLbl { color: var(--accent2); font-size: 11.5px; }
+.cpAces input { width: 100%; min-width: 0; padding: 2px 4px; font-family: ui-monospace, Consolas, monospace; }
+.cpAces .cpAcesY { color: var(--muted); font-size: 11px; white-space: nowrap; }
+.cpSliders { display: grid; grid-template-columns: 62px minmax(0, 1fr) 66px; gap: 5px 8px; align-items: center; }
+.cpSliders > span { color: var(--muted); text-align: right; cursor: ns-resize; font-size: 11.5px; }
+/* Simple / Advanced */
+.cp.simple .adv { display: none !important; }
+.cp.simple { min-height: 400px; }
+.cpAdvBar { flex: 1 0 100%; display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+.cpExplain { flex: 0 0 auto; font-size: 11px; line-height: 1.35; }
+.cpExplain b { color: var(--text); font-weight: 600; }
+.cpSliders input[type=number] { width: 66px; padding: 2px 4px; }
+.cpSliders input[type=range] { -webkit-appearance: none; appearance: none; width: 100%; height: 14px; margin: 0; padding: 0;
+  border-radius: 7px; border: 1px solid #000; }
+.cpSliders input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; width: 10px; height: 18px; border-radius: 3px;
+  background: #fff; border: 1px solid #000; box-shadow: 0 0 0 1px #fff8; }
+.cpSliders input[type=range]::-moz-range-thumb { width: 10px; height: 18px; border-radius: 3px; background: #fff; border: 1px solid #000; }
+
+/* Houdini settings page */
+.houInner { width: min(980px, 94vw); }
+.houGrid { display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 12px; }
+.houCard { border: 1px solid var(--line); border-radius: 5px; padding: 8px 12px 10px; margin-top: 10px; background: var(--panel2); }
+.houCard h4 { margin: 4px 0 6px; font-size: 12px; color: #bdbdc2; }
+.houCard .row > label:first-child { min-width: 86px; }
+.houCard code { font: 11px ui-monospace, Consolas, monospace; color: #cfcfd4; background: #1b1b1d; padding: 0 3px; border-radius: 3px; }
+.houSteps { margin: 4px 0 8px; padding-left: 20px; line-height: 1.55; }
+.houSteps li { margin: 3px 0; }
+#houStatus { cursor: pointer; }
+
+.modal { position: fixed; inset: 0; background: #000c; display: flex; align-items: center; justify-content: center; z-index: 10; }
+.modal.hidden { display: none; }
+.modalInner { background: var(--panel); border: 1px solid var(--line); border-radius: 6px; padding: 12px 14px; width: min(1200px, 94vw); max-height: 94vh; overflow: auto; }
+#refCanvas { width: 100%; height: auto; cursor: crosshair; background: #000; display: none; }
+.refDrop { position: relative; border: 2px dashed transparent; border-radius: 6px; }
+.refDrop.empty { border-color: var(--line); min-height: 320px; display: flex; align-items: center; justify-content: center; cursor: pointer; }
+.refDrop.empty:hover { border-color: #55555b; }
+.refDrop.over { border-color: var(--accent); background: #c9a77c14; }
+.refDropMsg { display: none; text-align: center; color: var(--text); line-height: 1.7; font-size: 14px; }
+.refDropMsg .hint { font-size: 11.5px; }
+.refDrop.empty .refDropMsg { display: block; }
+.refDrop:not(.empty) #refCanvas { display: block; }
+.refDrop.over:not(.empty)::after { content: "Drop to replace the image"; position: absolute; inset: 0; display: flex;
+  align-items: center; justify-content: center; background: #000a; color: #fff; font-size: 16px; border-radius: 4px; }
+
+/* medium screens: slimmer side panels */
+@media (max-width: 1400px) {
+  main { grid-template-columns: 290px minmax(0, 1fr) 250px; }
+}
+/* narrow screens / small windows: one scrolling column, fixed view heights */
+@media (max-width: 1000px), (max-height: 560px) {
+  body { overflow: auto; display: block; }
+  main { display: flex; flex-direction: column; }
+  #views { order: -1; }                       /* views first, then controls, then output */
+  aside, #views { overflow: visible; }
+  #controls, #outputPanel { border: 0; }
+  .camBox { height: min(56vw, 70vh); flex: none; }
+  .twoCol { grid-template-columns: minmax(0, 1fr); flex: none; }
+  .pane > .canvasBox { height: min(50vw, 60vh); flex: none; }
+}

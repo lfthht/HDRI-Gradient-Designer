@@ -1,0 +1,287 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>HDRI Gradient Designer</title>
+<link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+<header>
+  <div class="brand">HDRI Gradient Designer <span class="sub">ACEScg · Redshift</span></div>
+  <div class="hgroup">
+    <label>Preset <select id="presetSel"></select></label>
+    <button id="savePreset" title="Save current settings as a preset">Save preset…</button>
+    <span id="presetSaveBox" class="presetSaveBox" hidden>
+      <input id="presetName" type="text" spellcheck="false" placeholder="Preset name" title="Enter = save · Esc = cancel">
+      <button id="presetSaveOk" class="sm">Save</button><button id="presetSaveCancel" class="sm" title="Cancel (Esc)">✕</button>
+    </span>
+    <button id="openRefs" title="Sample a gradient from a reference photo">Sample from reference…</button>
+    <span class="btnGroup"><button id="btnUndo" title="Undo (Ctrl+Z)" disabled>↶ Undo</button><button id="btnRedo" title="Redo (Ctrl+Y / Ctrl+Shift+Z)" disabled>↷ Redo</button></span>
+  </div>
+  <div class="hgroup right">
+    <label>View <select id="viewSel">
+      <option value="aces_sdr">ACES 1.0 SDR-video</option>
+      <option value="untonemapped">Un-tone-mapped</option>
+    </select></label>
+    <label>View EV <input id="viewEV" type="number" step="0.25" value="0" style="width:56px"></label>
+    <label class="chk"><input id="dither" type="checkbox" checked> Preview dither</label>
+    <span id="houStatus" class="pill">Houdini: …</span>
+  </div>
+</header>
+
+<main>
+  <aside id="controls">
+    <section>
+      <h3>Light intensity <small>physical — independent of colour</small></h3>
+      <div class="row"><label>Condition</label><select data-key="light.condition">
+        <option value="clear">Clear</option><option value="partly">Partly cloudy</option><option value="overcast">Overcast</option>
+      </select></div>
+      <div class="row clearOnly"><label>Sky model</label><select data-key="light.model" style="max-width:240px"
+        title="PRG Clear Sky = Prague sky model (Wilkie et al. 2021), Redshift's default Physical Sky model: absolute sky luminance and sun from sun elevation, visibility and ground albedo. CIE = standard sky distribution + IES daylight levels (empirical, older).">
+        <option value="prg">PRG Clear Sky — physically based (2021)</option>
+        <option value="cie">CIE standard sky + IES daylight (empirical)</option>
+      </select></div>
+      <div class="slider prgOnly" data-key="light.visibility" data-min="20" data-max="131.8" data-step="0.1" data-label="Visibility km — 20 hazy · 59 normal · 132 very clear (air quality, sets haze, sky brightness and sun strength)"></div>
+      <div class="row cieOnly"><label>Sky distribution</label><select data-key="light.cie" style="max-width:220px"></select></div>
+      <div class="row cieOnly"><label class="chk"><input type="checkbox" data-key="light.auto"> Lux from sun elevation (IES daylight model)</label></div>
+      <div class="slider" data-key="light.skyLux" data-min="1" data-max="60000" data-step="1" data-curve="3" data-label="Sky illuminance, horizontal (lux)"></div>
+      <div class="slider" data-key="light.sunLux" data-min="0" data-max="130000" data-step="10" data-curve="3" data-label="Sun illuminance, normal (lux)"></div>
+      <div class="slider cieOnly" data-key="light.extinction" data-min="0.08" data-max="0.8" data-step="0.005" data-label="Atmospheric extinction (clear 0.21 · hazy 0.4+)"></div>
+      <div class="slider" data-key="light.stopsLightness" data-min="0" data-max="1" data-step="0.01" data-label="Lightness from colour stops (0 = pure physics)"></div>
+      <div class="slider" data-key="light.albedo" data-min="0.02" data-max="0.8" data-step="0.01" data-label="Ground albedo"></div>
+      <div class="hint" id="lightInfo"></div>
+    </section>
+
+    <section>
+      <h3>Exposure</h3>
+      <div class="slider" data-key="exp.ev" data-min="-8" data-max="12" data-step="0.05" data-label="Camera exposure EV (Redshift camera Exposure) — + brighter · − darker"></div>
+      <div class="row"><button class="sm" id="meterBtn" title="Set the camera exposure from a light meter: light falling on a subject that faces the camera, 18 % grey → mid grey. Also done automatically on preset load and Sync from Houdini.">Meter</button>
+        <span class="hint" id="meterHint"></span></div>
+      <div class="slider" data-key="exp.bgOffset" data-min="-6" data-max="6" data-step="0.05" data-label="Background EV vs the colour design — 0 = sky in frame as designed · − darker · + brighter (lighting &amp; reflections stay physical)"></div>
+      <div class="hint" id="exposureInfo"></div>
+    </section>
+
+    <section>
+      <h3>Horizon &amp; ground</h3>
+      <div class="slider" data-key="horizon.offset" data-min="-5" data-max="5" data-step="0.05" data-label="Horizon offset °"></div>
+      <div class="slider" data-key="horizon.softness" data-min="0.02" data-max="15" data-step="0.01" data-label="Horizon softness °" data-curve="2"></div>
+      <div class="row"><label>Ground top</label><input type="color" data-key="ground.top">
+        <label>Nadir</label><input type="color" data-key="ground.bottom"></div>
+      <div class="slider" data-key="ground.falloff" data-min="1" data-max="90" data-step="0.5" data-label="Ground falloff °"></div>
+    </section>
+
+    <section>
+      <h3>Glow <small>screen blend in display space</small></h3>
+      <div class="row"><label>Colour</label><input type="color" data-key="glow.color"></div>
+      <div class="slider" data-key="glow.strength" data-min="0" data-max="1" data-step="0.005" data-label="Sun glow"></div>
+      <div class="slider" data-key="glow.width" data-min="1" data-max="120" data-step="0.5" data-label="Glow width °"></div>
+      <div class="slider" data-key="glow.band" data-min="0" data-max="1" data-step="0.005" data-label="Horizon band"></div>
+      <div class="slider" data-key="glow.bandHeight" data-min="0.5" data-max="40" data-step="0.25" data-label="Band height °"></div>
+    </section>
+
+    <section>
+      <h3>Sun</h3>
+      <div class="slider" data-key="sun.az" data-min="-180" data-max="180" data-step="0.5" data-label="Azimuth °"></div>
+      <div class="slider" data-key="sun.el" data-min="-15" data-max="90" data-step="0.1" data-label="Elevation °"></div>
+      <div class="row"><label class="chk"><input type="checkbox" data-key="sun.disc"> HDR sun disc</label>
+        <label>Colour</label><input type="color" data-key="sun.color"></div>
+      <div class="row prgOnly"><label class="chk" title="The sun's colour from the Prague model's spectrum after the atmosphere: white-yellow high up, orange to deep red near the horizon, redder in hazy air (lower visibility). Off = the colour swatch above."><input type="checkbox" data-key="sun.physColor"> Physical sun colour (PRG — changes with elevation &amp; visibility)</label></div>
+      <div class="row"><label>Disc goes</label><select data-key="sun.mode">
+        <option value="baked">Baked into the sky HDRI (default)</option>
+        <option value="separate">Separate sun dome (invisible to camera)</option>
+      </select></div>
+      <div class="slider" data-key="sun.size" data-min="0.3" data-max="20" data-step="0.01" data-label="Disc size ° (real sun 0.53 — larger = softer shadows, same lux)" data-curve="2"></div>
+      <div class="slider" data-key="sun.softness" data-min="0" data-max="1" data-step="0.01" data-label="Edge softness"></div>
+      <div class="hint" id="sunInfo"></div>
+    </section>
+
+    <section>
+      <h3>Global</h3>
+      <div class="slider" data-key="saturation" data-min="0" data-max="2" data-step="0.01" data-label="Saturation"></div>
+      <div class="slider" data-key="grain" data-min="0" data-max="0.02" data-step="0.0005" data-label="Grain (anti-banding)"></div>
+    </section>
+  </aside>
+
+  <section id="views">
+    <div class="viewHead">
+      <h3>Camera view</h3>
+      <label title="Focal length on the chosen film back">Lens mm <input id="camFocal" type="number" step="1" min="5" max="1200" style="width:58px"></label>
+      <select id="camFilm" title="Film back / sensor width (Houdini camera Aperture)">
+        <option value="36">Full frame 36 mm</option>
+        <option value="41.4214">Houdini default 41.42 mm</option>
+        <option value="44">Medium format 44 mm</option>
+        <option value="23.5">APS-C 23.5 mm</option>
+      </select>
+      <label>HFOV° <input id="camHfov" type="number" step="0.1" value="73.74" style="width:62px"></label>
+      <label>Format <select id="camAspectSel">
+        <option value="">custom</option><option value="2.39">2.39:1</option><option value="2">2:1</option>
+        <option value="1.7778">16:9</option><option value="1.5">3:2</option><option value="1.3333">4:3</option>
+        <option value="1">1:1</option><option value="0.8">4:5</option><option value="0.6667">2:3</option>
+      </select></label>
+      <input id="camAspect" type="number" step="0.01" value="1.778" style="width:56px" title="Width / height">
+      <label>Pitch° <input id="camPitch" type="number" step="0.1" value="20" style="width:58px"></label>
+      <label>Yaw° <input id="camYaw" type="number" step="0.5" value="45" style="width:58px"></label>
+      <button id="camSync" title="Read lens / pitch / direction from the Houdini camera chosen in Houdini settings">Sync from Houdini</button>
+      <span class="hint">drag = pan · wheel = zoom</span>
+    </div>
+    <div class="canvasBox camBox"><canvas id="camView"></canvas></div>
+
+    <div id="gradEditor">
+      <div class="viewHead">
+        <h3>Sky gradient</h3>
+        <span class="hint">drag stops · click below a gradient (or double-click it) to add · double-click a stop to edit its colour · Del removes the selected stop</span>
+        <label class="chk"><input id="linkSides" type="checkbox"> Link sides</label>
+        <button id="copyAB" class="sm">Copy sun → away</button><button id="copyBA" class="sm">Copy away → sun</button>
+      </div>
+      <div class="gRow tRow"><span class="gLbl">Sun side</span><div class="track" data-side="A"><div class="trackGrad"></div></div></div>
+      <div class="gRow tRow"><span class="gLbl">Away side</span><div class="track" data-side="B"><div class="trackGrad"></div></div></div>
+      <div class="gRow"><span class="gLbl"></span><div id="trackTicks" class="ticks"></div></div>
+      <div class="stopEdit">
+        <span id="selSideLbl" class="pill">Sun side</span>
+        <input id="stopColor" type="color">
+        <input id="stopHex" type="text" spellcheck="false" maxlength="7">
+        <label>Elev° <input id="stopElev" type="number" step="0.01" min="0" max="90"></label>
+        <button id="stopDel" class="sm" title="Delete stop">✕</button>
+        <span class="sep"></span>
+        <label>Lightness</label><button class="sm" data-nudge="L-">−</button><button class="sm" data-nudge="L+">+</button>
+        <label>Warmth</label><button class="sm" data-nudge="W-">−</button><button class="sm" data-nudge="W+">+</button>
+        <span class="hint">nudge all stops of the selected side</span>
+      </div>
+      <div class="gSliders">
+        <div class="slider" data-key="curve.spread" data-min="0.02" data-max="2" data-step="0.01" data-curve="2" data-label="Horizon spread — low hugs the horizon, high climbs" title="Air-mass curvature of the colour transition"></div>
+        <div class="slider" data-key="curve.flow" data-min="0" data-max="0.15" data-step="0.001" data-label="Flow (smoothing) — 0 = exactly through stops"></div>
+        <div class="slider" data-key="sideBlend" data-min="0.2" data-max="6" data-step="0.05" data-label="Side blend falloff (sun side ↔ away side)"></div>
+      </div>
+    </div>
+
+    <div class="twoCol">
+      <div class="pane">
+        <div class="viewHead"><h3>Full dome</h3><span class="hint">drag the frame border = move camera · click / drag elsewhere = sun · wheel = zoom</span></div>
+        <div class="canvasBox"><canvas id="eqView"></canvas></div>
+      </div>
+      <div class="pane">
+        <div class="viewHead"><h3>Profile</h3>
+          <select id="profMode" title="What the curves show">
+            <option value="view">Display — same as View</option>
+            <option value="aces_sdr">Display — ACES 1.0 SDR-video</option>
+            <option value="untonemapped">Display — Un-tone-mapped</option>
+            <option value="lin">ACEScg 32-bit float (EXR values, log)</option>
+          </select>
+          <span class="hint" id="profHint">RGB vs elevation (√ axis) — solid: sun side, dashed: away</span></div>
+        <div class="canvasBox"><canvas id="profile"></canvas></div>
+      </div>
+    </div>
+  </section>
+
+  <aside id="outputPanel">
+    <section>
+      <h3>Export</h3>
+      <div class="row"><label>Name</label><input id="outName" type="text" value="sky"></div>
+      <div class="row"><label>Resolution</label><select id="outRes">
+        <option value="2048">2K (2048×1024)</option>
+        <option value="4096" selected>4K (4096×2048)</option>
+        <option value="8192">8K (8192×4096)</option>
+        <option value="16384">16K (16384×8192) — ~1 GB, needs RAM</option>
+      </select></div>
+      <div class="row"><label>Depth</label><span class="hint">32-bit float ACEScg (always)</span></div>
+      <button id="btnExport" class="primary">Export ACEScg EXR</button>
+      <div id="exportInfo" class="hint"></div>
+    </section>
+    <section>
+      <h3>Houdini / Redshift</h3>
+      <button id="btnSend" class="primary">Export + send to dome</button>
+      <button id="btnHouSettings" title="Connection, camera, dome and setup help">Houdini settings…</button>
+      <div id="houInfo" class="hint"></div>
+    </section>
+    <section>
+      <h3>Log</h3>
+      <pre id="log"></pre>
+    </section>
+  </aside>
+</main>
+
+<div id="houModal" class="modal hidden">
+  <div class="modalInner houInner">
+    <div class="viewHead"><h3>Houdini settings</h3><span class="hint">for sending the HDRI to a Houdini / Redshift scene — saved for next time</span>
+      <button id="houClose" style="margin-left:auto">Close</button></div>
+
+    <div class="houGrid">
+      <section class="houCard">
+        <h4>Connection</h4>
+        <div class="row"><label>Host</label><input id="hsHost" type="text" style="width:150px" title="Where Houdini runs — 127.0.0.1 = this computer"></div>
+        <div class="row"><label>Port</label><input id="hsPort" type="number" min="1" max="65535" style="width:90px" title="FXHoudiniMCP's port (FXHOUDINIMCP_PORT, default 8100)"></div>
+        <div class="row"><button id="hsTest" class="sm">Test connection</button><span id="hsStatus" class="pill">not tested</span></div>
+        <div id="hsInfo" class="hint"></div>
+      </section>
+
+      <section class="houCard">
+        <h4>Scene</h4>
+        <div class="row"><label>Camera</label><select id="hsCamera" style="min-width:180px"></select>
+          <button id="hsRefresh" class="sm" title="Reload cameras from the open scene">↻</button></div>
+        <div class="hint">used by <i>Sync from Houdini</i> and for setting the exposure on <i>Send</i></div>
+        <div class="row"><label>Dome node</label><span class="hint">/obj/</span><input id="hsDome" type="text" style="width:170px" title="Name of the Redshift dome light the designer creates (letters, digits, _)"></div>
+        <div class="row"><label>Dome Y rot°</label><input id="hsRy" type="number" step="1" style="width:80px" title="Rotates the HDRI around the vertical axis in Houdini"></div>
+        <h4>On <i>Export + send to dome</i></h4>
+        <div class="row"><label class="chk"><input id="hsDisable" type="checkbox"> Switch off the scene's other dome lights</label></div>
+        <div class="row"><label class="chk"><input id="hsSetEV" type="checkbox"> Set the camera's Redshift Exposure (EV)</label></div>
+        <div class="hint">The dome's Camera contribution (background) is always set; lighting and reflections stay physical.
+          Switched-off domes are marked with userData <code>hdri_designer_disabled</code>, the camera's previous
+          exposure is kept in its userData <code>hdri_designer_orig_ev</code>.</div>
+      </section>
+    </div>
+
+    <section class="houCard">
+      <h4>Setup for a new Houdini user</h4>
+      <ol class="houSteps">
+        <li><b>Houdini + Redshift</b> on the same computer as this app (Houdini reads the EXR straight from
+          <code id="hsOutDir">output/</code>). The scene uses Redshift's default OCIO config (ACEScg working space,
+          view <i>sRGB / ACES 1.0 SDR-video</i>).</li>
+        <li><b>Install FXHoudiniMCP</b> — free, MIT: <code>github.com/healkeiser/fxhoudinimcp</code>. Follow its install guide; it
+          adds a Houdini package (<code>Documents/houdiniXX.X/packages/fxhoudinimcp.json</code>) that starts a small
+          local web server inside Houdini.</li>
+        <li>In that package file check <code>FXHOUDINIMCP_PORT</code> (default <b>8100</b>), <code>FXHOUDINIMCP_BIND</code>
+          (<b>127.0.0.1</b>) and <code>FXHOUDINIMCP_AUTOSTART</code> = <b>1</b> so it starts with Houdini.</li>
+        <li><b>Start Houdini</b> and open your scene. Enter the same host / port here and press <i>Test connection</i>
+          — it shows the Houdini version and the open .hip file.</li>
+        <li>Pick the <b>camera</b>, then <i>Sync from Houdini</i> (Camera view) to match lens and direction, and
+          <i>Export + send to dome</i> to put the HDRI on a Redshift dome light in <code>/obj</code>.</li>
+      </ol>
+      <div class="hint">Notes: the designer only adds / replaces its own dome node (recreated on every send) and switches other domes
+        off, it never deletes them. Redshift's ROP clamps (<i>Max Subsample / Secondary Ray Intensity</i>, default 4)
+        clip the physical sun in reflections — raise them on the ROP if needed. Solaris / LOPs scenes aren't
+        supported yet (OBJ-level Redshift lights only).</div>
+    </section>
+  </div>
+</div>
+
+<div id="refModal" class="modal hidden">
+  <div class="modalInner">
+    <div class="viewHead">
+      <h3>Sample gradient from reference</h3>
+      <button id="refOpenFile" class="sm" title="Choose an image file">Open image…</button>
+      <input id="refFile" type="file" accept="image/*" hidden>
+      <span id="refName" class="hint"></span>
+      <label>Assumed VFOV° <input id="refFov" type="number" value="40" step="1" style="width:56px"></label>
+      <label>Click sets <span class="btnGroup"><button class="sm refSide active" data-side="A">Sun side</button><button class="sm refSide" data-side="B">Away side</button></span></label>
+      <label class="chk" title="With only one column sampled: use it for both sides (linked)"><input id="refBoth" type="checkbox"> One column → both sides</label>
+      <label class="chk"><input id="refZenith" type="checkbox" checked> Extrapolate to zenith</label>
+      <button id="refClear" class="sm">Clear columns</button>
+      <button id="refClose">Close</button>
+    </div>
+    <p class="hint">Click exactly on the horizon line inside a clean patch of sky — the column above the click (±<span id="refBandTxt">30</span> px median) is sampled up to the top of the frame.
+      Sample <b>two gradients from one image</b>: set the <b>Sun side</b> column (warm sky toward the sun), then the <b>Away side</b> column (the other part of the sky) — after the first click it switches automatically.
+      Both share the horizon line of the last click. Shift-click moves only the column.</p>
+    <div id="refDrop" class="refDrop">
+      <div class="refDropMsg"><b>Drop a reference image here</b><br>or click to choose a file · or paste it (Ctrl+V)
+        <div class="hint">JPG, PNG, WebP… — it stays on this computer; nothing is uploaded or saved.</div></div>
+      <canvas id="refCanvas"></canvas>
+    </div>
+    <div class="row"><button id="refApply" class="primary" disabled>Apply sampled stops</button><span id="refInfo" class="hint"></span></div>
+  </div>
+</div>
+
+<script src="/static/app.js"></script>
+<script src="/static/colorpicker.js"></script>
+</body>
+</html>

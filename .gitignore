@@ -1,0 +1,20 @@
+# exports and local data
+output/
+app/settings.json
+
+# reference photos — third-party images, not redistributable
+refs/
+
+# Prague sky model dataset (107.6 MB) — download from Zenodo, see README "PRG Clear Sky"
+tools/prg/*.dat
+
+# local build products of the reference comparison
+tools/prg/ref/*.exe
+tools/prg/ref/*.obj
+tools/prg/ref/build.log
+tools/prg/ref/ref_out.txt
+
+# Python / editor / local tool config
+__pycache__/
+*.pyc
+.claude/

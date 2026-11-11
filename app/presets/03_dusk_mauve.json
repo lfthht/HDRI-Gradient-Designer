@@ -1,0 +1,103 @@
+{
+ "name": "Dusk Mauve",
+ "params": {
+  "A": [
+   {
+    "e": 0,
+    "c": "#928592"
+   },
+   {
+    "e": 3,
+    "c": "#a38f99"
+   },
+   {
+    "e": 10,
+    "c": "#ab959d"
+   },
+   {
+    "e": 20,
+    "c": "#b39b9f"
+   },
+   {
+    "e": 45,
+    "c": "#a69fb0"
+   },
+   {
+    "e": 90,
+    "c": "#9896ad"
+   }
+  ],
+  "B": [
+   {
+    "e": 0,
+    "c": "#8a8594"
+   },
+   {
+    "e": 6,
+    "c": "#968e9c"
+   },
+   {
+    "e": 20,
+    "c": "#a197a5"
+   },
+   {
+    "e": 45,
+    "c": "#9e9daf"
+   },
+   {
+    "e": 90,
+    "c": "#9896ad"
+   }
+  ],
+  "link": false,
+  "sideBlend": 1.5,
+  "horizon": {
+   "offset": 0,
+   "softness": 0.8
+  },
+  "ground": {
+   "top": "#5a5560",
+   "bottom": "#2f2d33",
+   "falloff": 15
+  },
+  "glow": {
+   "color": "#ffb8b0",
+   "strength": 0.1,
+   "width": 30,
+   "band": 0.12,
+   "bandHeight": 8
+  },
+  "sun": {
+   "az": 0,
+   "el": -3,
+   "disc": true,
+   "color": "#ffc8b0",
+   "size": 0.53,
+   "softness": 0.15,
+   "mode": "baked"
+  },
+  "saturation": 1,
+  "grain": 0,
+  "version": 1,
+  "curve": {
+   "spread": 0.3,
+   "flow": 0.035
+  },
+  "light": {
+   "condition": "clear",
+   "cie": "13",
+   "auto": true,
+   "skyLux": 10000,
+   "sunLux": 50000,
+   "extinction": 0.25,
+   "stopsLightness": 0,
+   "anchorEl": 2,
+   "albedo": 0.2
+  },
+  "exp": {
+   "ev": 0,
+   "bgOffset": 0,
+   "bgRef": "design"
+  }
+ }
+}

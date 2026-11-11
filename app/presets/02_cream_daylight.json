@@ -1,0 +1,103 @@
+{
+ "name": "Cream Daylight",
+ "params": {
+  "A": [
+   {
+    "e": 0,
+    "c": "#e1dad3"
+   },
+   {
+    "e": 3,
+    "c": "#eae0d4"
+   },
+   {
+    "e": 8,
+    "c": "#ede3d7"
+   },
+   {
+    "e": 16,
+    "c": "#d2d1cd"
+   },
+   {
+    "e": 35,
+    "c": "#adb7be"
+   },
+   {
+    "e": 90,
+    "c": "#94a1ae"
+   }
+  ],
+  "B": [
+   {
+    "e": 0,
+    "c": "#d6d3d0"
+   },
+   {
+    "e": 6,
+    "c": "#d8d6d2"
+   },
+   {
+    "e": 16,
+    "c": "#c8cacb"
+   },
+   {
+    "e": 35,
+    "c": "#afb7be"
+   },
+   {
+    "e": 90,
+    "c": "#94a1ae"
+   }
+  ],
+  "link": false,
+  "sideBlend": 1.2,
+  "horizon": {
+   "offset": 0,
+   "softness": 0.5
+  },
+  "ground": {
+   "top": "#8a8580",
+   "bottom": "#4a4846",
+   "falloff": 12
+  },
+  "glow": {
+   "color": "#ffe2c0",
+   "strength": 0.1,
+   "width": 25,
+   "band": 0.08,
+   "bandHeight": 6
+  },
+  "sun": {
+   "az": 0,
+   "el": 18,
+   "disc": true,
+   "color": "#fff0dc",
+   "size": 0.53,
+   "softness": 0.15,
+   "mode": "baked"
+  },
+  "saturation": 1,
+  "grain": 0,
+  "version": 1,
+  "curve": {
+   "spread": 0.3,
+   "flow": 0.035
+  },
+  "light": {
+   "condition": "clear",
+   "cie": "12",
+   "auto": true,
+   "skyLux": 10000,
+   "sunLux": 50000,
+   "extinction": 0.21,
+   "stopsLightness": 0,
+   "anchorEl": 2,
+   "albedo": 0.2
+  },
+  "exp": {
+   "ev": 0,
+   "bgOffset": 0,
+   "bgRef": "design"
+  }
+ }
+}

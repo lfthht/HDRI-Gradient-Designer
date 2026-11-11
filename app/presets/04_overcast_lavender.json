@@ -1,0 +1,91 @@
+{
+ "name": "Overcast Lavender",
+ "params": {
+  "A": [
+   {
+    "e": 0,
+    "c": "#b9b6bd"
+   },
+   {
+    "e": 3,
+    "c": "#b9b8c0"
+   },
+   {
+    "e": 10,
+    "c": "#adb0ba"
+   },
+   {
+    "e": 20,
+    "c": "#a2a6b3"
+   },
+   {
+    "e": 45,
+    "c": "#979bac"
+   },
+   {
+    "e": 90,
+    "c": "#9196a8"
+   }
+  ],
+  "B": [
+   {
+    "e": 0,
+    "c": "#b9b6bd"
+   },
+   {
+    "e": 90,
+    "c": "#9196a8"
+   }
+  ],
+  "link": true,
+  "sideBlend": 1.0,
+  "horizon": {
+   "offset": 0,
+   "softness": 0.6
+  },
+  "ground": {
+   "top": "#7e7a76",
+   "bottom": "#45433f",
+   "falloff": 15
+  },
+  "glow": {
+   "color": "#fff4ea",
+   "strength": 0.06,
+   "width": 35,
+   "band": 0.0,
+   "bandHeight": 6
+  },
+  "sun": {
+   "az": 30,
+   "el": 35,
+   "disc": true,
+   "color": "#fff6ec",
+   "size": 6,
+   "softness": 1.0,
+   "mode": "baked"
+  },
+  "saturation": 1,
+  "grain": 0,
+  "version": 1,
+  "curve": {
+   "spread": 0.3,
+   "flow": 0.035
+  },
+  "light": {
+   "condition": "overcast",
+   "cie": "3",
+   "auto": false,
+   "skyLux": 12000,
+   "sunLux": 6000,
+   "extinction": 0.21,
+   "stopsLightness": 0,
+   "anchorEl": 2,
+   "albedo": 0.2
+  },
+  "exp": {
+   "ev": 0,
+   "bgOffset": 0,
+   "bgRef": "design"
+  }
+ }
+}
