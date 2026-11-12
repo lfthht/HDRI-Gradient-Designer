@@ -217,3 +217,9 @@ in `tools/prg/`, then to CIE / IES.
   gradients and the picker.
 - **ACES / OpenColorIO** — the view transform comes from the OCIO config shipped with Maxon Redshift.
 - CIE S 011 / ISO 15469 standard skies, IES RP-21 daylight model, CIE 1931 colour matching functions.
+
+## License
+
+[MIT](LICENSE) © 2026 Julius Brockelmann — covers this project's own code. Bundled third-party parts keep their own
+licenses: the Prague sky model code and data (`tools/prg/ref/`, `app/prg_data/`) are Apache 2.0, see their
+`LICENSE.txt` and `NOTICE.txt`.
