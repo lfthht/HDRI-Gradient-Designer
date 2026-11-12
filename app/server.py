@@ -156,7 +156,7 @@ class Handler(BaseHTTPRequestHandler):
                 # Prague sky model luminance table for the exact sun elevation / visibility / albedo
                 if not prg_service.available():
                     return self._json({"ok": False, "available": False,
-                                       "error": "Prague dataset not found in tools/prg"})
+                                       "error": "Prague sky data not found (app/prg_data)"})
                 t = prg_service.sky_table(float(q.get("el", 10)), float(q.get("vis", 59.4)), float(q.get("alb", 0.2)))
                 return self._json({"ok": True, "available": True, **t})
             if p == "/api/settings":

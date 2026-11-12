@@ -7,7 +7,9 @@ For a sun elevation, visibility and ground albedo it returns
 * direct-normal illuminance of the sun (lux) from the solar spectrum × model transmittance.
 
 Spectral → photometric with the CIE 1931 ȳ (tools/prg/prg_weights.json, built by tools/prg/build_weights.py).
-Needs tools/prg/PragueSkyModelDatasetGround.dat; if it's missing, PRG mode is reported as unavailable.
+Data: app/prg_data/ — the part of the Prague dataset the designer uses (≈40 MB, shipped with the app, values unchanged;
+built by tools/prg/build_bundle.py). Falls back to the full tools/prg/PragueSkyModelDatasetGround.dat if the bundle is
+missing; with neither, PRG mode is reported as unavailable.
 """
 from __future__ import annotations
 
@@ -22,6 +24,7 @@ ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 PRG_DIR = os.path.join(ROOT, "tools", "prg")
 DATASET = os.path.join(PRG_DIR, "PragueSkyModelDatasetGround.dat")
 WEIGHTS = os.path.join(PRG_DIR, "prg_weights.json")
+BUNDLE = os.path.join(ROOT, "app", "prg_data")
 
 N_EL, N_AZ = 64, 72
 EL_MIN = -4.2                      # lowest sun elevation in the dataset (deg)
@@ -40,7 +43,8 @@ _cache: dict = {}
 
 
 def available() -> bool:
-    return os.path.isfile(DATASET) and os.path.isfile(WEIGHTS)
+    has_bundle = os.path.isfile(os.path.join(BUNDLE, "meta.json"))
+    return (has_bundle or os.path.isfile(DATASET)) and os.path.isfile(WEIGHTS)
 
 
 def _load():
@@ -48,7 +52,10 @@ def _load():
     if _model is None:
         sys.path.insert(0, PRG_DIR)
         from prague_sky import PragueSkyModel  # noqa: E402
-        _model = PragueSkyModel(DATASET)
+        if os.path.isfile(os.path.join(BUNDLE, "meta.json")):
+            _model = PragueSkyModel.from_bundle(BUNDLE)
+        else:
+            _model = PragueSkyModel(DATASET)
         with open(WEIGHTS, encoding="utf-8") as f:
             _weights = json.load(f)
         assert (_model.channels, _model.ch_start, _model.ch_width) == (

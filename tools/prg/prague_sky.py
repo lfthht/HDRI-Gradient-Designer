@@ -5,7 +5,8 @@ Covers what the HDRI designer needs: dataset reading (radiance + transmittance; 
 radiance (computeParameters / evaluateModel / reconstruct) and sun radiance (solar spectrum × transmittance).
 Vectorised over view directions; the configuration (sun elevation, visibility, albedo, altitude) is scalar.
 
-Only used offline by tools/prg/build_tables.py — the app itself never loads the dataset.
+The app (app/prg_service.py) loads the trimmed bundle in app/prg_data/ (PragueSkyModel.from_bundle), written from
+the full dataset by tools/prg/build_bundle.py; PragueSkyModel(path) reads the original .dat.
 """
 from __future__ import annotations
 
@@ -31,11 +32,69 @@ def _sun_rad_table() -> np.ndarray:
 
 
 class PragueSkyModel:
-    def __init__(self, path: str):
+    def __init__(self, path: str | None = None, keep_raw: bool = False):
+        """path: the original dataset (.dat). Use PragueSkyModel.from_bundle() for the app's trimmed bundle."""
+        if path is None:
+            return
+        self._keep_raw = keep_raw
         with open(path, "rb") as f:
             self._read_radiance(f)
             self._read_transmittance(f)
         self.sun_rad = _sun_rad_table()
+        self.rad_channels = list(range(self.channels))       # dataset channel → index into sun / zen / emph
+
+    @classmethod
+    def from_bundle(cls, bundle_dir: str) -> "PragueSkyModel":
+        """Loads the trimmed, compressed subset written by tools/prg/build_bundle.py (app/prg_data/).
+
+        Holds exactly the dataset values the designer evaluates (ground altitude, the luminance channels, the two
+        transmittance altitude slices around the viewer), so results are bit-identical to the full dataset."""
+        import json
+        import lzma
+        import os
+        m = cls()
+        with open(os.path.join(bundle_dir, "meta.json"), encoding="utf-8") as f:
+            meta = json.load(f)
+        arr = lambda k: np.asarray(meta[k], np.float64)
+        m.vis, m.alb, m.alt, m.ele = arr("vis"), arr("alb"), arr("alt"), arr("ele")
+        m.channels, m.ch_start, m.ch_width, m.rank = meta["channels"], meta["ch_start"], meta["ch_width"], meta["rank"]
+        m.sun_breaks, m.zen_breaks, m.emph_breaks = arr("sun_breaks"), arr("zen_breaks"), arr("emph_breaks")
+        m.rad_channels = list(meta["rad_channels"])
+        m.sun_rad = arr("sun_rad")
+        t = meta["trans"]
+        m.dDim, m.aDim, m.rankT = t["dDim"], t["aDim"], t["rankT"]
+        m.alt_t, m.vis_t = np.asarray(t["alt_t"], np.float64), np.asarray(t["vis_t"], np.float64)
+
+        def unpack(blob, dtype, shape):
+            n = int(np.prod(shape)); sz = np.dtype(dtype).itemsize
+            planes = np.frombuffer(blob, np.uint8, count=n * sz).reshape(sz, n)     # byte-shuffled
+            return np.ascontiguousarray(planes.T).view(dtype).reshape(shape)
+
+        na, nh, ne, nc = len(m.alb), len(m.alt), len(m.ele), len(m.rad_channels)
+        ns, nz, nm = len(m.sun_breaks), len(m.zen_breaks), len(m.emph_breaks)
+        sun, zen, emph = [], [], []
+        for iv in range(len(m.vis)):
+            with open(os.path.join(bundle_dir, f"radiance_v{iv}.xz"), "rb") as f:
+                blob = lzma.decompress(f.read())
+            cfg = (na, nh, ne, nc, m.rank)
+            parts = [("<f2", cfg + (ns,)), ("<f8", cfg), ("<f2", cfg + (nz,)), ("<f2", (na, nh, ne, nc, nm))]
+            out, off = [], 0
+            for dt, shp in parts:
+                n = int(np.prod(shp)) * np.dtype(dt).itemsize
+                out.append(unpack(blob[off:off + n], dt, shp)); off += n
+            s, k, zr, e = out
+            sun.append(s.astype(np.float32))
+            zen.append((zr.astype(np.float64) / k[..., None]).astype(np.float32))       # as _read_radiance
+            emph.append(e.astype(np.float32))
+        m.sun, m.zen, m.emph = np.stack(sun), np.stack(zen), np.stack(emph)
+        with open(os.path.join(bundle_dir, "transmittance.xz"), "rb") as f:
+            blob = lzma.decompress(f.read())
+        nalt, nvis = len(m.alt_t), len(m.vis_t)
+        shU, shV = (nalt, m.dDim, m.aDim, m.rankT), (nvis, nalt, m.channels, m.rankT)
+        nU = int(np.prod(shU)) * 4
+        m.U = unpack(blob[:nU], "<f4", shU).astype(np.float64)
+        m.V = unpack(blob[nU:], "<f4", shV).astype(np.float64)
+        return m
 
     # ------------------------------------------------------------------ reading
     @staticmethod
@@ -72,6 +131,9 @@ class PragueSkyModel:
         self.sun = np.stack([raw[f"s{r}"].astype(np.float32) for r in range(self.rank)], 1).reshape(*shape, self.rank, ns)
         self.zen = np.stack([(raw[f"z{r}"].astype(np.float64) / raw[f"k{r}"][:, None]).astype(np.float32)
                              for r in range(self.rank)], 1).reshape(*shape, self.rank, nz)
+        if getattr(self, "_keep_raw", False):                # for build_bundle.py: the stored half floats + scales
+            self.zen_raw = np.stack([raw[f"z{r}"] for r in range(self.rank)], 1).reshape(*shape, self.rank, nz)
+            self.zen_k = np.stack([raw[f"k{r}"] for r in range(self.rank)], 1).reshape(*shape, self.rank)
         self.emph = raw["e"].astype(np.float32).reshape(*shape, nm)
 
     def _read_transmittance(self, f):
@@ -130,6 +192,7 @@ class PragueSkyModel:
     def _reconstruct(self, cfg, ch, g, a, z):
         """reconstruct() for one configuration (vis, alb, alt, ele indices) and channel, vectorised over angles."""
         iv, ia, ih, ie = cfg
+        ch = self.rad_channels.index(ch)            # the bundle only holds the luminance channels
         sun = self.sun[iv, ia, ih, ie, ch]          # (rank, ns)
         zen = self.zen[iv, ia, ih, ie, ch]          # (rank, nz)
         emph = self.emph[iv, ia, ih, ie, ch]        # (nm,)

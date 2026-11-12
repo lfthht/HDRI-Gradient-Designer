@@ -1,0 +1,13 @@
+Prague Sky Model data (subset)
+
+Source: Prague Sky Model dataset, ground level (PragueSkyModelDatasetGround.dat, 107.6 MB)
+        Copyright 2022 Charles University
+        https://zenodo.org/records/19140728 — licensed under the Apache License, Version 2.0 (LICENSE.txt)
+Model:  A. Wilkie, P. Vevoda, T. Bashford-Rogers, L. Hošek, T. Iser, M. Kolářová, T. Rittig, J. Křivánek:
+        "A Fitted Radiance and Attenuation Model for Realistic Atmospheres", ACM TOG 40(4), 2021;
+        P. Vevoda, T. Bashford-Rogers, M. Kolářová, A. Wilkie: "A Wide Spectral Range Sky Radiance Model",
+        Pacific Graphics 2022.
+
+Modifications: these files contain a subset of the dataset (the sky radiance channels used for luminance, the
+sun transmittance at ground level and the solar spectrum), repacked and xz-compressed by tools/prg/build_bundle.py.
+Values are unchanged. Polarisation data is not included.

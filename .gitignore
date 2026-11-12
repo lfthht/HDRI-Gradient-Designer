@@ -5,7 +5,7 @@ app/settings.json
 # reference photos — third-party images, not redistributable
 refs/
 
-# Prague sky model dataset (107.6 MB) — download from Zenodo, see README "PRG Clear Sky"
+# full Prague sky model dataset (107.6 MB) — only needed to rebuild app/prg_data with tools/prg/build_bundle.py
 tools/prg/*.dat
 
 # local build products of the reference comparison

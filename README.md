@@ -10,10 +10,7 @@ start.bat            → http://127.0.0.1:8765
 Needs Python 3 + numpy, a WebGL2 browser, and (for the Houdini buttons) the
 FXHoudiniMCP plugin running in Houdini (see *Houdini settings*).
 
-For the **PRG Clear Sky** model, download the Prague sky model dataset (107.6 MB, Apache 2.0) into `tools/prg/`
-(it isn't in the repository because of its size):
-`https://zenodo.org/records/19140728/files/PragueSkyModelDatasetGround.dat?download=1`
-→ `tools/prg/PragueSkyModelDatasetGround.dat`. Without it the app uses the CIE / IES model.
+Nothing else to install or download: the **PRG Clear Sky** data ships with the app (`app/prg_data/`, see *Intensity*).
 Reference photos (`refs/`) and exports (`output/`) aren't part of the repository.
 
 ## Workflow
@@ -111,8 +108,12 @@ smooth hump without corners. Measured ripple in the exported EXR: ~0.05–0.1 of
     (20 km hazy … 132 km very clear) and ground albedo. The local server evaluates the model for the exact values
     (`app/prg_service.py`, ~0.03 s) — a numpy port of the Apache-2.0 reference code (`tools/prg/prague_sky.py`),
     checked against the compiled C++ reference to < 1e-8. Spectra → luminance with the CIE 1931 ȳ
-    (`tools/prg/prg_weights.json`). Needs `tools/prg/PragueSkyModelDatasetGround.dat` (107.6 MB, Zenodo record
-    19140728, Apache 2.0); without it the app falls back to CIE / IES.
+    (`tools/prg/prg_weights.json`). Data: `app/prg_data/` (~40 MB, included) — the part of the Prague dataset
+    (`PragueSkyModelDatasetGround.dat`, 107.6 MB, [Zenodo record 19140728](https://zenodo.org/records/19140728),
+    Apache 2.0) the designer evaluates: the luminance channels and the ground-level sun transmittance, values
+    unchanged, xz-compressed. `tools/prg/build_bundle.py` rebuilds it from the full file and `--verify` checks it
+    gives identical results. If the folder is missing the app falls back to the full `.dat` in `tools/prg/`, then
+    to CIE / IES.
   * **CIE (overcast, partly cloudy, or chosen for clear):** sky luminance *distribution* from CIE S 011 / ISO 15469
     (15 standard skies); *level*: horizontal sky and direct-normal sun illuminance from the IES RP-21 daylight model
     (extinction adjustable; twilight falloff below 0°); untick *Lux from sun elevation* to type values;
