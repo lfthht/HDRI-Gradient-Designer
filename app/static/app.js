@@ -84,7 +84,9 @@ function defaultParams() {
     // exposure: ev = the Redshift camera Exposure (EV), + brighter (Meter sets it from a reading; also done on
     // preset load / Houdini sync when a preset has none) and the background = physical sky ± bgOffset EV
     // (dome Camera contribution 2^bgOffset) — both: + = brighter
-    exp: { ev: 0, bgOffset: 0, bgRef: "design" },
+    // lock: true = the EV stays where it is set; false = auto exposure — the EV follows the meter whenever the light
+    // or the design changes (camera moves never re-meter)
+    exp: { ev: 0, bgOffset: 0, bgRef: "design", lock: true },
     saturation: 1, grain: 0,
   };
 }
@@ -842,6 +844,13 @@ function calibrate(exportW) {
   // (with PRG, wait until the sky table for the current light has arrived, so the reading uses the real sky)
   const lightReady = !usePrg() || (S.prg && S.prg.key === prgKey());
   S.meterEV = EV100_OFFSET - S.meterEV100;                         // the reading as a Redshift EV
+  // unlocked: re-meter when anything in the parameters except the exposure itself changes (the camera lives outside
+  // P, so moving it doesn't count)
+  if (!X.lock && lightReady) {
+    const { exp, ...rest } = P;
+    const sig = JSON.stringify(rest);
+    if (sig !== S.autoSig) { S.autoSig = sig; S.needMeter = true; }
+  } else if (X.lock) S.autoSig = null;
   if (S.needMeter && lightReady) { X.ev = Math.round(S.meterEV * 20) / 20; S.needMeter = false; syncEV(); }
   S.camEV = X.ev;
   S.ev100 = EV100_OFFSET - S.camEV;
@@ -870,7 +879,11 @@ function calibrate(exportW) {
   const sgn = (v, d = 1) => (v >= 0 ? "+" : "−") + Math.abs(v).toFixed(d);
   const evDesc = (ev) => (ev >= 14 ? "bright daylight" : ev >= 12 ? "daylight" : ev >= 9 ? "low sun / sunset" : ev >= 5 ? "dusk / twilight" : "night");
   const dm = S.meterEV - S.camEV;
-  $("#meterHint").textContent = Math.abs(dm) < 0.05 ? "matches the meter" : `meter reads ${sgn(S.meterEV, 2)} EV`;
+  $("#meterHint").textContent = !X.lock ? "auto — follows the meter (re-reads on light / design changes, not camera moves)"
+    : Math.abs(dm) < 0.05 ? "matches the meter" : `meter reads ${sgn(S.meterEV, 2)} EV`;
+  const evEl = document.querySelector('.slider[data-key="exp.ev"]');
+  if (evEl) evEl.querySelectorAll("input").forEach((i) => (i.disabled = !X.lock));
+  $("#meterBtn").disabled = !X.lock;
   $("#exposureInfo").innerHTML =
     `Camera ${sgn(S.camEV, 2)} EV = EV100 ${S.ev100.toFixed(1)} (${evDesc(S.ev100)})<br>` +
     `Background: Camera contribution ${S.camScale.toPrecision(3)} = ${sgn(S.bgVsPhysical)} EV vs the physical sky`;

@@ -53,7 +53,7 @@ Reference photos (`refs/`) and exports (`output/`) aren't part of the repository
    **border** of the white camera frame on the **Full dome** view (it highlights on hover). Clicking or dragging
    anywhere else — also inside the frame — places the sun; the sun marker always wins where it overlaps the border. *Lens mm* +
    film back and *Format* (2.39:1 … 2:3) set the crop. Moving the camera view never re-meters (also not with
-   *Auto-meter*, which only reacts to light / design changes) — use *Meter now* for a new reading.
+   *Lock exposure* off, which only reacts to light / design changes) — use *Meter* for a new reading.
    With Houdini: *Sync from Houdini* reads lens, pitch and look direction from the scene camera.
 5. *Export + send to dome* → creates/updates `/obj/HDRI_Designer_Dome`
    (and `/obj/HDRI_Designer_Dome_Sun`), switches off the scene's own dome lights,
@@ -126,7 +126,10 @@ smooth hump without corners. Measured ripple in the exported EXR: ~0.05–0.1 of
 * Verified on export (golden hour preset): sky EXR integrates to 4 894 lx (target 4 900), sun EXR to 9 579 lx (target 9 600).
 
 ## Exposure (one physical dome)
-Three controls, for any subject (car, product, person, building):
+Four controls, for any subject (car, product, person, building):
+* **Lock exposure** (on by default and in every built-in preset) — on: the camera EV stays where you set it.
+  Off: auto exposure — the EV follows the meter whenever the light or the design changes (sun, sky model,
+  visibility, colours …); moving the camera never re-meters. The EV slider and *Meter* are greyed out while it's off.
 * **Camera exposure EV** — Redshift's camera *Exposure (EV)*, sent as is; **+ = brighter** (like Background).
   The readout also shows it as photographic EV100 (= 9.94 − RS EV; higher EV100 = darker). It's a plain setting
   like on a real camera: it only changes when you move it or press *Meter*, so light changes show their real

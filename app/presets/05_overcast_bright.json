@@ -85,7 +85,8 @@
   "exp": {
    "ev": 0,
    "bgOffset": 0,
-   "bgRef": "design"
+   "bgRef": "design",
+   "lock": true
   }
  }
 }
