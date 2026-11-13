@@ -171,7 +171,14 @@ function syncLightUI() {
   $$(".clearOnly").forEach((e) => (e.style.display = P.light.condition === "clear" ? "" : "none"));
   // the designed sun colour is unused while the physical one is on
   const sc = document.querySelector('input[type=color][data-key="sun.color"]');
-  if (sc) { const phys = prg && P.sun.physColor; sc.disabled = phys; sc.title = phys ? "Physical sun colour (PRG) is on" : ""; }
+  if (sc) { const phys = prg && P.sun.physColor; sc.disabled = phys || !P.sun.disc; sc.title = phys ? "Physical sun colour (PRG) is on" : ""; }
+  // sun off: the disc, sunlight and sun-glow controls have nothing to act on
+  $$(".sunDep").forEach((e) => {
+    e.classList.toggle("off", !P.sun.disc);
+    e.querySelectorAll("input:not([type=color]), select").forEach((i) => (i.disabled = !P.sun.disc));
+  });
+  const oh = $("#sunOffHint");
+  if (oh) oh.textContent = P.sun.disc ? "" : "pure gradient sky — no disc, sunlight or glow";
 }
 const getPath = (o, k) => k.split(".").reduce((a, b) => a[b], o);
 function setPath(o, k, v) { const ks = k.split("."); const last = ks.pop(); ks.reduce((a, b) => a[b], o)[last] = v; }
@@ -651,7 +658,7 @@ function setCommonUniforms() {
   gl.uniform3fv(uni("uGndBot"), hexToLab(P.ground.bottom));
   gl.uniform1f(uni("uGndFalloff"), Math.max(0.5, P.ground.falloff));
   gl.uniform3fv(uni("uGlowColor"), hexToRgb(P.glow.color));
-  gl.uniform1f(uni("uGlowStrength"), P.glow.strength);
+  gl.uniform1f(uni("uGlowStrength"), P.sun.disc ? P.glow.strength : 0);   // sun off = no sun glow either
   gl.uniform1f(uni("uGlowWidth"), Math.max(0.5, P.glow.width));
   gl.uniform1f(uni("uBand"), P.glow.band);
   gl.uniform1f(uni("uBandHeight"), Math.max(0.25, P.glow.bandHeight));
@@ -887,12 +894,13 @@ function calibrate(exportW) {
   $("#exposureInfo").innerHTML =
     `Camera ${sgn(S.camEV, 2)} EV = EV100 ${S.ev100.toFixed(1)} (${evDesc(S.ev100)})<br>` +
     `Background: Camera contribution ${S.camScale.toPrecision(3)} = ${sgn(S.bgVsPhysical)} EV vs the physical sky`;
-  const colourNote = physSunColor()
+  const colourNote = physSunColor() && P.sun.disc
     ? `<br>Colour: physical (PRG) <span class="swatch" style="background:${sunSwatchHex()}"></span>` +
       (S.prg.sunCCT && S.prg.sunCCT > 1900 ? ` ≈ ${Math.round(S.prg.sunCCT / 50) * 50} K` : " deep orange-red")
     : "";
   $("#sunInfo").innerHTML = (sunOn
     ? `Sun ${fmtLux(L.sunLux)} ⟂ · Ω ${(S.sunOmega * 1e5).toFixed(2)}e-5 sr · ${S.sunRad.toExponential(2)} RS units → 32-bit EXR`
+    : !P.sun.disc ? "Sun off — pure gradient sky, no direct light"
     : P.sun.el <= 0 ? "Sun below the horizon — no direct light" : "No direct sun (overcast or illuminance 0)") + colourNote;
   syncLightUI();
 }

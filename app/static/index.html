@@ -75,7 +75,7 @@
     <section>
       <h3>Glow <small>screen blend in display space</small></h3>
       <div class="row"><label>Colour</label><input type="color" data-key="glow.color"></div>
-      <div class="slider" data-key="glow.strength" data-min="0" data-max="1" data-step="0.005" data-label="Sun glow"></div>
+      <div class="slider sunDep" data-key="glow.strength" data-min="0" data-max="1" data-step="0.005" data-label="Sun glow"></div>
       <div class="slider" data-key="glow.width" data-min="1" data-max="120" data-step="0.5" data-label="Glow width °"></div>
       <div class="slider" data-key="glow.band" data-min="0" data-max="1" data-step="0.005" data-label="Horizon band"></div>
       <div class="slider" data-key="glow.bandHeight" data-min="0.5" data-max="40" data-step="0.25" data-label="Band height °"></div>
@@ -85,15 +85,16 @@
       <h3>Sun</h3>
       <div class="slider" data-key="sun.az" data-min="-180" data-max="180" data-step="0.5" data-label="Azimuth °"></div>
       <div class="slider" data-key="sun.el" data-min="-15" data-max="90" data-step="0.1" data-label="Elevation °"></div>
-      <div class="row"><label class="chk"><input type="checkbox" data-key="sun.disc"> HDR sun disc</label>
-        <label>Colour</label><input type="color" data-key="sun.color"></div>
-      <div class="row prgOnly"><label class="chk" title="The sun's colour from the Prague model's spectrum after the atmosphere: white-yellow high up, orange to deep red near the horizon, redder in hazy air (lower visibility). Off = the colour swatch above."><input type="checkbox" data-key="sun.physColor"> Physical sun colour (PRG — changes with elevation &amp; visibility)</label></div>
-      <div class="row"><label>Disc goes</label><select data-key="sun.mode">
+      <div class="row"><label class="chk" title="On: HDR sun disc + direct sunlight + sun glow. Off: a pure gradient sky — no disc, no direct sunlight and no sun glow, in the views and in the exported EXR. The sun position still shapes the sky (sun side / away side, PRG sky brightness)."><input type="checkbox" data-key="sun.disc"> Sun on</label>
+        <span class="hint" id="sunOffHint"></span></div>
+      <div class="row sunDep"><label>Colour</label><input type="color" data-key="sun.color"></div>
+      <div class="row prgOnly sunDep"><label class="chk" title="The sun's colour from the Prague model's spectrum after the atmosphere: white-yellow high up, orange to deep red near the horizon, redder in hazy air (lower visibility). Off = the colour swatch above."><input type="checkbox" data-key="sun.physColor"> Physical sun colour (PRG — changes with elevation &amp; visibility)</label></div>
+      <div class="row sunDep"><label>Disc goes</label><select data-key="sun.mode">
         <option value="baked">Baked into the sky HDRI (default)</option>
         <option value="separate">Separate sun dome (invisible to camera)</option>
       </select></div>
-      <div class="slider" data-key="sun.size" data-min="0.3" data-max="20" data-step="0.01" data-label="Disc size ° (real sun 0.53 — larger = softer shadows, same lux)" data-curve="2"></div>
-      <div class="slider" data-key="sun.softness" data-min="0" data-max="1" data-step="0.01" data-label="Edge softness"></div>
+      <div class="slider sunDep" data-key="sun.size" data-min="0.3" data-max="20" data-step="0.01" data-label="Disc size ° (real sun 0.53 — larger = softer shadows, same lux)" data-curve="2"></div>
+      <div class="slider sunDep" data-key="sun.softness" data-min="0" data-max="1" data-step="0.01" data-label="Edge softness"></div>
       <div class="hint" id="sunInfo"></div>
     </section>
 

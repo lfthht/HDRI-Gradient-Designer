@@ -128,6 +128,8 @@ be in physical units too (e.g. Redshift lights in nits) to balance.
   *Baked into the sky HDRI* (default) puts the disc in the one sky EXR; *Separate sun dome* writes `*_sun.exr` to a
   second dome hidden from camera. **Physical sun colour** (PRG) takes the disc colour from the model's sun spectrum
   after the atmosphere — ≈ 5300 K high up, orange to deep red near the horizon, redder in hazy air.
+  **Sun on** off gives a pure gradient sky: no disc, no direct sunlight and no sun glow, in the views and the EXR
+  (the sun position still shapes the sky).
 - **Ground** — Lambertian, albedo × (sky + sun) / π.
 - **Colour and intensity are separate:** the stops set hue and saturation; brightness comes from the light model and
   the exposure (unless *Lightness from colour stops* > 0).

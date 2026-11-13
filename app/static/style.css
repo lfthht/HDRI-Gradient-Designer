@@ -47,6 +47,7 @@ button.primary:hover { background: #4a4031; }
 #outputPanel button:not(.primary):not(.sm) { width: 100%; margin: 3px 0; }
 button.sm { padding: 1px 8px; }
 .chk { cursor: pointer; }
+.sunDep.off { opacity: .45; }
 .row { display: flex; gap: 8px; align-items: center; margin: 6px 0; flex-wrap: wrap; }
 .row > label:first-child { min-width: 70px; }
 .hint { color: var(--muted); font-size: 11.5px; }
